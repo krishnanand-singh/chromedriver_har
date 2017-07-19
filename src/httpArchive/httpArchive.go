@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/RomainBelorgey/chromedriver_har/events"
+	"events"
 )
 
 func parseHeaders(headers map[string]string) []*Header {
@@ -187,6 +187,26 @@ func CreateHARFromEvents(chromeEvents []*events.ChromeEvent) (*HAR, error) {
 		}
 
 	}
+	entries := make([]*Entry, 0)
+
+	for _, entry := range har.Log.Entries {
+		if entry.Timings == nil || entry.Response == nil {
+			continue
+		}
+		if entry.Request.Cookies == nil {
+			entry.Request.Cookies = make([]*Cookie, 0)
+		}
+		if entry.Cache == nil {
+			entry.Cache = make(map[string]interface{}, 0)
+		}
+
+		if entry.Response.Cookies == nil {
+			fmt.Printf("Response.Cookies nil\n")
+			entry.Response.Cookies = make([]*Cookie, 0)
+		}
+		entries = append(entries, entry)
+	}
+	har.Log.Entries = entries
 	return &har, nil
 }
 
